@@ -65,11 +65,9 @@ open class Chart: UIControl {
     Series to display in the chart.
     */
     open var series: [ChartSeries] = [] {
-      didSet {
-        DispatchQueue.main.async {
-          self.setNeedsDisplay()
+        didSet {
+            setNeedsDisplay()
         }
-      }
     }
 
     /**
@@ -134,6 +132,11 @@ open class Chart: UIControl {
     */
     @IBInspectable
     open var axesColor: UIColor = UIColor.gray.withAlphaComponent(0.3)
+
+    /**
+    Border width
+    */
+    open var borderWidth: CGFloat = 0.5
 
     /**
     Color for the grid.
@@ -209,6 +212,14 @@ open class Chart: UIControl {
     Alpha component for the area color.
     */
     open var areaAlphaComponent: CGFloat = 0.1
+
+    /**
+     Draw border lines
+    */
+    open var showBorderLineTop = true
+    open var showBorderLineRight = true
+    open var showBorderLineBottom = true
+    open var showBorderLineLeft = true
 
     // MARK: Private variables
 
@@ -482,7 +493,7 @@ open class Chart: UIControl {
         }
         lineLayer.fillColor = nil
         lineLayer.lineWidth = lineWidth
-        lineLayer.lineJoin = CAShapeLayerLineJoin.bevel
+        lineLayer.lineJoin = kCALineJoinBevel
 
         self.layer.addSublayer(lineLayer)
 
@@ -519,17 +530,21 @@ open class Chart: UIControl {
     fileprivate func drawAxes() {
         let context = UIGraphicsGetCurrentContext()!
         context.setStrokeColor(axesColor.cgColor)
-        context.setLineWidth(0.5)
+        context.setLineWidth(borderWidth)
 
         // horizontal axis at the bottom
-        context.move(to: CGPoint(x: CGFloat(0), y: drawingHeight + topInset))
-        context.addLine(to: CGPoint(x: CGFloat(drawingWidth), y: drawingHeight + topInset))
-        context.strokePath()
+        if showBorderLineBottom {
+            context.move(to: CGPoint(x: CGFloat(0), y: drawingHeight + topInset))
+            context.addLine(to: CGPoint(x: CGFloat(drawingWidth), y: drawingHeight + topInset))
+            context.strokePath()
+        }
 
         // horizontal axis at the top
-        context.move(to: CGPoint(x: CGFloat(0), y: CGFloat(0)))
-        context.addLine(to: CGPoint(x: CGFloat(drawingWidth), y: CGFloat(0)))
-        context.strokePath()
+        if showBorderLineTop {
+            context.move(to: CGPoint(x: CGFloat(0), y: CGFloat(0)))
+            context.addLine(to: CGPoint(x: CGFloat(drawingWidth), y: CGFloat(0)))
+            context.strokePath()
+        }
 
         // horizontal axis when y = 0
         if min.y < 0 && max.y > 0 {
@@ -540,14 +555,18 @@ open class Chart: UIControl {
         }
 
         // vertical axis on the left
-        context.move(to: CGPoint(x: CGFloat(0), y: CGFloat(0)))
-        context.addLine(to: CGPoint(x: CGFloat(0), y: drawingHeight + topInset))
-        context.strokePath()
+        if showBorderLineLeft {
+            context.move(to: CGPoint(x: CGFloat(0), y: CGFloat(0)))
+            context.addLine(to: CGPoint(x: CGFloat(0), y: drawingHeight + topInset))
+            context.strokePath()
+        }
 
         // vertical axis on the right
-        context.move(to: CGPoint(x: CGFloat(drawingWidth), y: CGFloat(0)))
-        context.addLine(to: CGPoint(x: CGFloat(drawingWidth), y: drawingHeight + topInset))
-        context.strokePath()
+        if showBorderLineRight {
+            context.move(to: CGPoint(x: CGFloat(drawingWidth), y: CGFloat(0)))
+            context.addLine(to: CGPoint(x: CGFloat(drawingWidth), y: drawingHeight + topInset))
+            context.strokePath()
+        }
     }
 
     fileprivate func drawLabelsAndGridOnXAxis() {
